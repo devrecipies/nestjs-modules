@@ -4,9 +4,6 @@
   "files": [],
   "references": [
     {
-      "path": "./apps/nestjs-modules-app-e2e"
-    },
-    {
       "path": "./apps/nestjs-modules-app"
     },
     {

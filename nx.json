@@ -52,7 +52,6 @@
       "options": {
         "targetName": "test"
       },
-      "exclude": ["apps/nestjs-modules-app-e2e/**/*"]
     }
   ],
   "targetDefaults": {
