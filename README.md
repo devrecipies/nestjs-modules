@@ -159,6 +159,8 @@ export class AppController {
 
 Here's how to integrate with a React frontend to receive FCM tokens and messages:
 
+![Frontend Example](./Frontend.png)
+
 #### 1. Install Firebase SDK
 
 ```bash
