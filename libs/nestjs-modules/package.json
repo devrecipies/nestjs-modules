@@ -1,6 +1,6 @@
 {
   "name": "@devrecipies/nestjs-modules",
-  "version": "0.0.2-8",
+  "version": "0.0.2-10",
   "main": "./src/index.ts",
   "module": "./src/index.ts",
   "types": "./dist/index.d.ts",
@@ -12,21 +12,10 @@
     },
     "./package.json": "./package.json"
   },
-  "files": [
-    "index.js",
-    "index.js.map",
-    "index.d.ts",
-    "index.d.ts.map",
-    "lib/**/*.js",
-    "lib/**/*.js.map",
-    "lib/**/*.d.ts",
-    "lib/**/*.d.ts.map",
-    "README.md",
-    "LICENSE"
-  ],
-  "publishConfig": {
-    "directory": "dist/libs/nestjs-modules",
-    "access": "public"
+  "nx-release-publish": {
+    "options": {
+      "packageRoot": "dist/libs/nestjs-modules"
+    }
   },
   "dependencies": {
     "@nestjs/common": "^11.0.0",
