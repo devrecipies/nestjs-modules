@@ -1,24 +1,45 @@
 {
   "name": "@devrecipies/nestjs-modules",
-  "version": "0.0.2-10",
-  "main": "./src/index.ts",
-  "module": "./src/index.ts",
+  "version": "0.0.5",
+  "description": "A collection of NestJS modules for common functionality",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js", 
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./index.d.ts",
-      "import": "./index.js",
-      "default": "./index.js"
-    },
-    "./package.json": "./package.json"
-  },
-  "nx-release-publish": {
-    "options": {
-      "packageRoot": "dist/libs/nestjs-modules"
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
     }
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "sideEffects": false,
+  "keywords": [
+    "nestjs",
+    "modules",
+    "typescript",
+    "backend"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/nestjs-modules"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/nestjs-modules/issues"
+  },
+  "homepage": "https://github.com/your-username/nestjs-modules#readme",
+  "publishConfig": {
+    "access": "public"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.0",
     "tslib": "^2.3.0"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^10.0.0 || ^11.0.0"
   }
 }

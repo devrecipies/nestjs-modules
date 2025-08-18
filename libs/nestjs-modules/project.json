@@ -1,0 +1,48 @@
+{
+  "name": "@devrecipies/nestjs-modules",
+  "root": "libs/nestjs-modules",
+  "projectType": "library",
+  "sourceRoot": "libs/nestjs-modules/src",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "options": {
+        "outputPath": "dist/libs/nestjs-modules",
+        "tsConfig": "libs/nestjs-modules/tsconfig.lib.json",
+        "packageJson": "libs/nestjs-modules/package.json",
+        "main": "libs/nestjs-modules/src/index.ts",
+        "assets": [
+          "libs/nestjs-modules/*.md"
+        ]
+      },
+      "outputs": ["{options.outputPath}"]
+    },
+    "publish": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cd dist/libs/nestjs-modules && npm publish",
+        "cwd": "{workspaceRoot}"
+      },
+      "dependsOn": ["build"]
+    },
+    "nx-release-publish": {
+      "executor": "@nx/js:release-publish",
+      "options": {},
+      "dependsOn": ["build"]
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "options": {
+        "lintFilePatterns": ["libs/nestjs-modules/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "options": {
+        "jestConfig": "libs/nestjs-modules/jest.config.ts"
+      },
+      "outputs": ["{workspaceRoot}/coverage/libs/nestjs-modules"]
+    }
+  },
+  "tags": ["npm:public"]
+}

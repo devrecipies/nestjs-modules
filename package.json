@@ -2,7 +2,11 @@
   "name": "@nestjs-modules/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "build:lib": "nx build nestjs-modules && cp -r dist/libs/nestjs-modules/src/* libs/nestjs-modules/dist/",
+    "publish:lib": "cd libs/nestjs-modules && npm publish",
+    "build-and-publish": "npm run build:lib && npm run publish:lib"
+  },
   "private": true,
   "dependencies": {
     "@nestjs/common": "^11.0.0",
@@ -26,7 +30,7 @@
     "@nx/webpack": "21.4.0",
     "@nx/workspace": "21.4.0",
     "@swc-node/register": "~1.9.1",
-    "@swc/core": "~1.5.7",
+    "@swc/core": "~1.13.3",
     "@swc/helpers": "~0.5.11",
     "@swc/jest": "~0.2.38",
     "@types/jest": "^30.0.0",
@@ -36,6 +40,7 @@
     "jest": "^30.0.2",
     "jest-environment-node": "^30.0.2",
     "jest-util": "^30.0.2",
+    "jsonc-eslint-parser": "^2.1.0",
     "nx": "21.4.0",
     "prettier": "^2.6.2",
     "ts-jest": "^29.4.0",
@@ -43,6 +48,24 @@
     "tslib": "^2.3.0",
     "typescript": "~5.8.2",
     "typescript-eslint": "^8.29.0",
+    "verdaccio": "^6.0.5",
     "webpack-cli": "^5.1.4"
-  }
+  },
+  "nx": {
+    "includedScripts": [],
+    "targets": {
+      "local-registry": {
+        "executor": "@nx/js:verdaccio",
+        "options": {
+          "port": 4873,
+          "config": ".verdaccio/config.yml",
+          "storage": "tmp/local-registry/storage"
+        }
+      }
+    }
+  },
+  "assets": [
+    { "input": "libs/nestjs-modules", "glob": "README.md", "output": "." },
+    { "input": "libs/nestjs-modules", "glob": "LICENSE", "output": "." }
+  ]
 }
