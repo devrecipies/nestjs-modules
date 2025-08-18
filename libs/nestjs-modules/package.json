@@ -1,6 +1,6 @@
 {
   "name": "@devrecipies/nestjs-modules",
-  "version": "0.0.2-3",
+  "version": "0.0.2-4",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -14,7 +14,7 @@
     }
   },
   "files": [
-    "dist",
+    "**/*",
     "!**/*.tsbuildinfo"
   ],
   "dependencies": {
