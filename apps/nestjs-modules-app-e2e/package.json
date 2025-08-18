@@ -1,0 +1,26 @@
+{
+  "name": "@nestjs-modules/nestjs-modules-app-e2e",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "implicitDependencies": [
+      "@nestjs-modules/nestjs-modules-app"
+    ],
+    "targets": {
+      "e2e": {
+        "executor": "@nx/jest:jest",
+        "outputs": [
+          "{projectRoot}/test-output/jest/coverage"
+        ],
+        "options": {
+          "jestConfig": "apps/nestjs-modules-app-e2e/jest.config.ts",
+          "passWithNoTests": true
+        },
+        "dependsOn": [
+          "@nestjs-modules/nestjs-modules-app:build",
+          "@nestjs-modules/nestjs-modules-app:serve"
+        ]
+      }
+    }
+  }
+}
