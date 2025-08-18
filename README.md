@@ -52,12 +52,14 @@ import { FcmModule } from '@devrecipies/nestjs-modules';
 
 @Module({
   imports: [
-    FcmModule.register({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY,
-      // Or use service account file path
-      // serviceAccountPath: './path/to/serviceAccount.json'
+    FcmModule.forRoot({
+      config: {
+        projectId: process.env.FIREBASE_PROJECT_ID || '',
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL || '',
+        privateKey: process.env.FIREBASE_PRIVATE_KEY || '',
+        // Or use service account file path
+        // serviceAccountPath: './path/to/serviceAccount.json'
+      },
     }),
   ],
 })
