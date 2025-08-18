@@ -4,13 +4,13 @@
   "files": [],
   "references": [
     {
-      "path": "./apps/nestjs-modules-app-e2e"
-    },
-    {
       "path": "./apps/nestjs-modules-app"
     },
     {
       "path": "./libs/nestjs-modules"
+    },
+    {
+      "path": "./apps/example-ui"
     }
   ]
 }

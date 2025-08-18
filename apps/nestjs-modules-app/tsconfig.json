@@ -4,6 +4,9 @@
   "include": [],
   "references": [
     {
+      "path": "../../libs/nestjs-modules"
+    },
+    {
       "path": "./tsconfig.app.json"
     },
     {
