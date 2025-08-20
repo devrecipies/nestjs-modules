@@ -22,6 +22,9 @@ Send push notifications to mobile devices and web browsers using Firebase Cloud 
 
 - ✅ Send notifications to individual devices
 - ✅ Send notifications to multiple devices
+- ✅ Send notifications to topics
+- ✅ Subscribe devices to topics
+- ✅ Unsubscribe devices from topics
 - ✅ Built-in error handling
 - ✅ TypeScript support
 - ✅ Easy configuration
@@ -110,6 +113,43 @@ export class NotificationService {
 
     return result;
   }
+
+  async sendToTopic() {
+    const topic = 'news-updates';
+    
+    const result = await this.fcmService.sendToTopic(topic, {
+      notification: {
+        title: 'Breaking News',
+        body: 'Important news update for all subscribers',
+      },
+      data: {
+        category: 'news',
+        priority: 'high',
+      },
+    });
+
+    return result;
+  }
+
+  async subscribeToTopic() {
+    const deviceTokens = ['token1', 'token2'];
+    const topic = 'news-updates';
+    
+    const result = await this.fcmService.subscribeToTopic(deviceTokens, topic);
+    console.log(`Subscribed ${result.successCount} devices to ${topic}`);
+    
+    return result;
+  }
+
+  async unsubscribeFromTopic() {
+    const deviceTokens = ['token1', 'token2'];
+    const topic = 'news-updates';
+    
+    const result = await this.fcmService.unsubscribeFromTopic(deviceTokens, topic);
+    console.log(`Unsubscribed ${result.successCount} devices from ${topic}`);
+    
+    return result;
+  }
 }
 ```
 
@@ -123,6 +163,26 @@ interface SendNotificationDto {
   title: string;
   body: string;
   token: string;
+  data?: { [key: string]: string };
+}
+
+interface SendToMultipleDevicesDto {
+  title: string;
+  body: string;
+  tokens: string[];
+  data?: { [key: string]: string };
+}
+
+interface SendToTopicDto {
+  title: string;
+  body: string;
+  topic: string;
+  data?: { [key: string]: string };
+}
+
+interface TopicSubscriptionDto {
+  tokens: string[];
+  topic: string;
 }
 
 @Controller()
@@ -132,11 +192,10 @@ export class AppController {
   @Post('send-notification')
   async sendNotification(@Body() dto: SendNotificationDto) {
     try {
-      const result = await this.fcmService.sendToDevice(dto.token, {
-        notification: {
-          title: dto.title,
-          body: dto.body,
-        },
+      const { title, body, token, data } = dto;
+      const result = await this.fcmService.sendToDevice(token, {
+        notification: { title, body },
+        data,
       });
 
       return {
@@ -149,6 +208,95 @@ export class AppController {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error occurred',
         message: 'Failed to send notification',
+      };
+    }
+  }
+
+  @Post('send-to-multiple-devices')
+  async sendToMultipleDevices(@Body() dto: SendToMultipleDevicesDto) {
+    try {
+      const { title, body, tokens, data } = dto;
+      const result = await this.fcmService.sendToMultipleDevices(tokens, {
+        notification: { title, body },
+        data,
+      });
+
+      return {
+        success: true,
+        successCount: result.successCount,
+        failureCount: result.failureCount,
+        message: `Messages sent to ${result.successCount}/${tokens.length} devices`,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+        message: 'Failed to send notifications to multiple devices',
+      };
+    }
+  }
+
+  @Post('send-to-topic')
+  async sendToTopic(@Body() dto: SendToTopicDto) {
+    try {
+      const { title, body, topic, data } = dto;
+      const result = await this.fcmService.sendToTopic(topic, {
+        notification: { title, body },
+        data,
+      });
+
+      return {
+        success: true,
+        messageId: result,
+        message: `Message sent successfully to topic '${topic}'`,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+        message: 'Failed to send message to topic',
+      };
+    }
+  }
+
+  @Post('subscribe-to-topic')
+  async subscribeToTopic(@Body() dto: TopicSubscriptionDto) {
+    try {
+      const { tokens, topic } = dto;
+      const result = await this.fcmService.subscribeToTopic(tokens, topic);
+
+      return {
+        success: true,
+        successCount: result.successCount,
+        failureCount: result.failureCount,
+        message: `Subscribed ${result.successCount}/${tokens.length} devices to topic '${topic}'`,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+        message: 'Failed to subscribe devices to topic',
+      };
+    }
+  }
+
+  @Post('unsubscribe-from-topic')
+  async unsubscribeFromTopic(@Body() dto: TopicSubscriptionDto) {
+    try {
+      const { tokens, topic } = dto;
+      const result = await this.fcmService.unsubscribeFromTopic(tokens, topic);
+
+      return {
+        success: true,
+        successCount: result.successCount,
+        failureCount: result.failureCount,
+        message: `Unsubscribed ${result.successCount}/${tokens.length} devices from topic '${topic}'`,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+        message: 'Failed to unsubscribe devices from topic',
       };
     }
   }
@@ -347,15 +495,126 @@ export function FCMComponent() {
 
 #### 5. Testing with cURL
 
+**Send to Single Device:**
 ```bash
 curl -X POST http://localhost:3000/send-notification \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Test FCM Notification",
     "body": "This is a real test notification!",
-    "token": "your-device-token-here"
+    "token": "your-device-token-here",
+    "data": {
+      "userId": "123",
+      "actionType": "message"
+    }
   }'
 ```
+
+**Send to Multiple Devices:**
+```bash
+curl -X POST http://localhost:3000/send-to-multiple-devices \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Broadcast Message",
+    "body": "This message is sent to multiple devices",
+    "tokens": ["token1", "token2", "token3"],
+    "data": {
+      "type": "broadcast",
+      "priority": "high"
+    }
+  }'
+```
+
+**Send to Topic:**
+```bash
+curl -X POST http://localhost:3000/send-to-topic \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Topic Notification",
+    "body": "This is a notification sent to a topic",
+    "topic": "news-updates",
+    "data": {
+      "category": "news",
+      "timestamp": "2024-01-01T00:00:00Z"
+    }
+  }'
+```
+
+**Subscribe to Topic:**
+```bash
+curl -X POST http://localhost:3000/subscribe-to-topic \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tokens": ["device-token-1", "device-token-2"],
+    "topic": "news-updates"
+  }'
+```
+
+**Unsubscribe from Topic:**
+```bash
+curl -X POST http://localhost:3000/unsubscribe-from-topic \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tokens": ["device-token-1", "device-token-2"],
+    "topic": "news-updates"
+  }'
+```
+
+## 🐳 Quick Start with Docker
+
+The easiest way to get started is using our pre-built Docker image:
+
+### Option 1: Docker Compose (Recommended)
+
+1. **Create a `docker-compose.yml` file:**
+```yaml
+version: '3.8'
+
+services:
+  nestjs-modules-fcm:
+    image: devrecipies/nestjs-modules-fcm:latest
+    container_name: nestjs-modules-fcm
+    ports:
+      - "3130:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      # Firebase configuration - add your actual values to .env file
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID:-your-project-id}
+      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL:-your-service-account@your-project.iam.gserviceaccount.com}
+      - FIREBASE_PRIVATE_KEY=${FIREBASE_PRIVATE_KEY:-your-private-key}
+    env_file:
+      - .env
+    restart: unless-stopped
+```
+
+2. **Create a `.env` file with your Firebase credentials:**
+```bash
+FIREBASE_PROJECT_ID=your-actual-project-id
+FIREBASE_CLIENT_EMAIL=your-service-account@your-project.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYour-actual-private-key\n-----END PRIVATE KEY-----"
+```
+
+3. **Run the application:**
+```bash
+docker-compose up -d
+```
+
+4. **Access your API:**
+- Base URL: `http://localhost:3130`
+- API endpoints: `http://localhost:3130/api/`
+
+### Option 2: Direct Docker Run
+
+```bash
+docker run -d \
+  --name nestjs-modules-fcm \
+  -p 3130:3000 \
+  --env-file .env \
+  devrecipies/nestjs-modules-fcm:latest
+```
+
+That's it! Your FCM API server is now running and ready to send notifications.
 
 ## Examples
 

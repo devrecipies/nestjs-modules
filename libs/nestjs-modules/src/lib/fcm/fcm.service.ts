@@ -1,6 +1,10 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import * as admin from 'firebase-admin';
-import { getMessaging, BatchResponse, MessagingTopicManagementResponse } from 'firebase-admin/messaging';
+import {
+  getMessaging,
+  BatchResponse,
+  MessagingTopicManagementResponse,
+} from 'firebase-admin/messaging';
 import type { FcmConfig } from './interfaces/fcm-config.interface';
 import type { FcmMessage } from './interfaces/fcm-message.interface';
 
@@ -30,16 +34,20 @@ export class FcmService implements OnModuleInit {
       this.logger.log('Firebase Admin SDK and FCM initialized successfully');
     } catch (error) {
       this.logger.error('Failed to initialize Firebase Admin SDK', error);
-      this.logger.warn('FCM service will not be available - check your Firebase configuration');
+      this.logger.warn(
+        'FCM service will not be available - check your Firebase configuration'
+      );
       // Don't throw error to prevent app crash during development
     }
   }
 
   async sendToDevice(token: string, message: FcmMessage): Promise<string> {
     if (!this.messaging) {
-      throw new Error('FCM service is not initialized. Check your Firebase configuration.');
+      throw new Error(
+        'FCM service is not initialized. Check your Firebase configuration.'
+      );
     }
-    
+
     try {
       const response = await this.messaging.send({
         token,
@@ -53,13 +61,18 @@ export class FcmService implements OnModuleInit {
     }
   }
 
-  async sendToMultipleDevices(tokens: string[], message: FcmMessage): Promise<BatchResponse> {
+  async sendToMultipleDevices(
+    tokens: string[],
+    message: FcmMessage
+  ): Promise<BatchResponse> {
     try {
       const response = await this.messaging.sendEachForMulticast({
         tokens,
         ...message,
       });
-      this.logger.log(`Messages sent to ${response.successCount}/${tokens.length} devices`);
+      this.logger.log(
+        `Messages sent to ${response.successCount}/${tokens.length} devices`
+      );
       return response;
     } catch (error) {
       this.logger.error('Failed to send messages to multiple devices', error);
@@ -73,7 +86,9 @@ export class FcmService implements OnModuleInit {
         topic,
         ...message,
       });
-      this.logger.log(`Message sent successfully to topic '${topic}': ${response}`);
+      this.logger.log(
+        `Message sent successfully to topic '${topic}': ${response}`
+      );
       return response;
     } catch (error) {
       this.logger.error(`Failed to send message to topic '${topic}'`, error);
@@ -81,24 +96,40 @@ export class FcmService implements OnModuleInit {
     }
   }
 
-  async subscribeToTopic(tokens: string[], topic: string): Promise<MessagingTopicManagementResponse> {
+  async subscribeToTopic(
+    tokens: string[],
+    topic: string
+  ): Promise<MessagingTopicManagementResponse> {
     try {
       const response = await this.messaging.subscribeToTopic(tokens, topic);
-      this.logger.log(`Subscribed ${response.successCount}/${tokens.length} devices to topic '${topic}'`);
+      this.logger.log(
+        `Subscribed ${response.successCount}/${tokens.length} devices to topic '${topic}'`
+      );
       return response;
     } catch (error) {
-      this.logger.error(`Failed to subscribe devices to topic '${topic}'`, error);
+      this.logger.error(
+        `Failed to subscribe devices to topic '${topic}'`,
+        error
+      );
       throw error;
     }
   }
 
-  async unsubscribeFromTopic(tokens: string[], topic: string): Promise<MessagingTopicManagementResponse> {
+  async unsubscribeFromTopic(
+    tokens: string[],
+    topic: string
+  ): Promise<MessagingTopicManagementResponse> {
     try {
       const response = await this.messaging.unsubscribeFromTopic(tokens, topic);
-      this.logger.log(`Unsubscribed ${response.successCount}/${tokens.length} devices from topic '${topic}'`);
+      this.logger.log(
+        `Unsubscribed ${response.successCount}/${tokens.length} devices from topic '${topic}'`
+      );
       return response;
     } catch (error) {
-      this.logger.error(`Failed to unsubscribe devices from topic '${topic}'`, error);
+      this.logger.error(
+        `Failed to unsubscribe devices from topic '${topic}'`,
+        error
+      );
       throw error;
     }
   }
