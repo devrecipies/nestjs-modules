@@ -11,6 +11,10 @@ const firebaseConfig = {
   measurementId: 'xxx',
 };
 
+if (firebaseConfig.apiKey === 'xxx') {
+  console.warn('HEY! YOU NEED TO PUT YOUR FIREBASE CONFIG HERE');
+}
+
 export const app = initializeApp(firebaseConfig);
 
 // Initialize messaging with service worker

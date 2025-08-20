@@ -1,43 +1,46 @@
 import { useState, useEffect } from 'react';
-import {
-  Typography,
-  Box,
-  Button,
-  Paper,
-  Snackbar,
-  Alert,
-  List,
-  ListItem,
-  ListItemText,
-  Divider,
-} from '@mui/material';
-import {
-  ContentCopy as CopyIcon,
-  Message as MessageIcon,
-} from '@mui/icons-material';
+import { Typography, Box, Tabs, Tab, Snackbar, Alert } from '@mui/material';
 import { getToken, onMessage } from 'firebase/messaging';
 import { messaging } from './firebase-config';
+import { SendNotificationToDevice } from './components/fcm/SendNotificationToDevice';
+import { SendToTopicComponent } from './components/fcm/SendToTopicComponent';
+import { MessageListener } from './components/fcm/MessageListener';
+import { ReceivedMessage } from './components/fcm/types';
 
-interface ReceivedMessage {
-  id: string;
-  title: string;
-  body: string;
-  timestamp: Date;
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`fcm-tabpanel-${index}`}
+      aria-labelledby={`fcm-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
+    </div>
+  );
 }
 
 export function FcmComponent() {
   const [deviceToken, setDeviceToken] = useState<string>('');
   const [copySuccess, setCopySuccess] = useState(false);
   const [messages, setMessages] = useState<ReceivedMessage[]>([]);
+  const [tabValue, setTabValue] = useState(0);
 
   useEffect(() => {
     const generateToken = async () => {
       try {
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
-          const token = await getToken(messaging, {
-            vapidKey: '****',
-          });
+          const token = await getToken(messaging);
           if (token) {
             setDeviceToken(token);
           } else {
@@ -67,6 +70,7 @@ export function FcmComponent() {
         title: payload.notification?.title || 'No Title',
         body: payload.notification?.body || 'No Body',
         timestamp: new Date(),
+        data: payload.data,
       };
 
       setMessages((prev) => [newMessage, ...prev]);
@@ -75,21 +79,12 @@ export function FcmComponent() {
     return () => unsubscribe();
   }, []);
 
-  const handleCopyCurl = async () => {
-    const curlCommand = `curl -X POST http://localhost:5656/api/send-notification \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "title": "Test FCM Notification",
-    "body": "This is a real test notification!",
-    "token": "${deviceToken}"
-  }'`;
+  const handleCopySuccess = () => {
+    setCopySuccess(true);
+  };
 
-    try {
-      await navigator.clipboard.writeText(curlCommand);
-      setCopySuccess(true);
-    } catch (err) {
-      console.error('Failed to copy curl command:', err);
-    }
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
   };
 
   const handleCloseSnackbar = () => {
@@ -102,120 +97,32 @@ export function FcmComponent() {
         Firebase Cloud Messaging
       </Typography>
 
-      <Typography variant="h6" component="h2" gutterBottom sx={{ mt: 3 }}>
-        Device Token
-      </Typography>
-
-      <Paper
-        variant="outlined"
-        sx={{
-          p: 2,
-          mt: 2,
-          border: '1px solid #ccc',
-          wordBreak: 'break-all',
-        }}
-      >
-        <Typography
-          variant="body2"
-          component="p"
-          sx={{
-            fontFamily: 'monospace',
-            textAlign: 'left',
-          }}
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', mt: 3 }}>
+        <Tabs
+          value={tabValue}
+          onChange={handleTabChange}
+          aria-label="FCM testing tabs"
         >
-          {deviceToken}
-        </Typography>
-      </Paper>
+          <Tab label="Send to Device" />
+          <Tab label="Send to Topic" />
+        </Tabs>
+      </Box>
 
-      <Typography variant="h6" component="h2" gutterBottom sx={{ mt: 3 }}>
-        Test Command
-      </Typography>
+      <TabPanel value={tabValue} index={0}>
+        <SendNotificationToDevice
+          deviceToken={deviceToken}
+          onCopySuccess={handleCopySuccess}
+        />
+      </TabPanel>
 
-      <Paper
-        variant="outlined"
-        sx={{
-          p: 2,
-          mt: 2,
-          border: '1px solid #ccc',
-          wordBreak: 'break-all',
-        }}
-      >
-        <Typography
-          variant="body2"
-          component="pre"
-          sx={{
-            fontFamily: 'monospace',
-            textAlign: 'left',
-            whiteSpace: 'pre-wrap',
-            margin: 0,
-          }}
-        >
-          {`curl -X POST http://localhost:5656/api/send-notification \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "title": "Test FCM Notification",
-    "body": "This is a real test notification!",
-    "token": "${deviceToken}"
-  }'`}
-        </Typography>
+      <TabPanel value={tabValue} index={1}>
+        <SendToTopicComponent 
+          deviceToken={deviceToken}
+          onCopySuccess={handleCopySuccess} 
+        />
+      </TabPanel>
 
-        <Button
-          variant="contained"
-          startIcon={<CopyIcon />}
-          onClick={handleCopyCurl}
-          sx={{ mt: 2 }}
-          disabled={!deviceToken}
-        >
-          Copy
-        </Button>
-      </Paper>
-
-      <Typography variant="h6" component="h2" gutterBottom sx={{ mt: 4 }}>
-        Received Messages
-      </Typography>
-
-      <Paper
-        variant="outlined"
-        sx={{
-          mt: 2,
-          border: '1px solid #ccc',
-          maxHeight: 400,
-          overflow: 'auto',
-        }}
-      >
-        {messages.length === 0 ? (
-          <Box sx={{ p: 3, textAlign: 'center' }}>
-            <MessageIcon sx={{ fontSize: 48, color: 'grey.400', mb: 1 }} />
-            <Typography variant="body2" color="grey.600">
-              No messages received yet
-            </Typography>
-          </Box>
-        ) : (
-          <List>
-            {messages.map((message, index) => (
-              <div key={message.id}>
-                <ListItem alignItems="flex-start">
-                  <ListItemText
-                    primary={message.title}
-                    secondary={
-                      <>
-                        <Typography variant="body2" component="span">
-                          {message.body}
-                        </Typography>
-                        <br />
-                        <Typography variant="caption" color="text.secondary">
-                          {message.timestamp.toLocaleString()}
-                        </Typography>
-                      </>
-                    }
-                  />
-                </ListItem>
-                {index < messages.length - 1 && <Divider />}
-              </div>
-            ))}
-          </List>
-        )}
-      </Paper>
+      <MessageListener messages={messages} />
 
       <Snackbar
         open={copySuccess}
@@ -223,7 +130,7 @@ export function FcmComponent() {
         onClose={handleCloseSnackbar}
       >
         <Alert onClose={handleCloseSnackbar} severity="success">
-          Token copied to clipboard!
+          Command copied to clipboard!
         </Alert>
       </Snackbar>
     </Box>
